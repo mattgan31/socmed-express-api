@@ -1,4 +1,6 @@
 const db = require("../db.js");
+const jwt = require('jsonwebtoken');
+const secretKey = require('../config/secretKey');
 
 const getUsers = async (req, res) => {
     try {
@@ -98,9 +100,31 @@ const updateUser = async (req, res) => {
     }
 }
 
+const userLogin = (async (req, res) => {
+  try{
+  // const payload = { id: 1, username: "JohnDoe" };
+  const { username, password } = req.body;
+  const user = await db.query(`SELECT * FROM users WHERE username = $1 AND password = $2`, [username, password]);
+
+  if (!user) {
+    return res.status(401).json({
+      status: 401,
+      error: "Invalid username or password"
+    })
+  }
+
+  const token = jwt.sign({ id: user.id, username: user.username }, secretKey);
+
+    res.json({ token });
+  } catch (err) {
+    console.error(err);
+  }
+})
+
 module.exports = {
     getUsers,
     getUserById,
     createUser,
-    updateUser
+    updateUser,
+    userLogin
 }
