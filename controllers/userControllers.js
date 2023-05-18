@@ -1,6 +1,9 @@
 const db = require("../db.js");
 const jwt = require('jsonwebtoken');
 const secretKey = require('../config/secretKey');
+const bcrypt = require('bcrypt');
+var salt = bcrypt.genSaltSync(10);
+
 
 const getUsers = async (req, res) => {
     try {
@@ -28,7 +31,7 @@ const getUsers = async (req, res) => {
 const getUserById = async (req, res) => {
     const id = parseInt(req.params.id);
     try {
-        const user = await db.any(`SELECT * FROM users WHERE id = $1`, [id]);
+        const user = await db.query(`SELECT * FROM users WHERE id = $1`, [id]);
 
         if (user.length === 0) {
             return res.status(400).json({
@@ -38,7 +41,7 @@ const getUserById = async (req, res) => {
         }
         res.json({
             status: 200,
-            data: user
+            data: user[0]
         });
     } catch (err) {
         console.error(err);
@@ -59,8 +62,10 @@ const createUser = async (req, res) => {
         });
     }
 
+    var hashPassword = bcrypt.hashSync(password, salt);
+
     try {
-        const result = await db.any(`INSERT INTO users (username, password) VALUES ($1, $2)`, [username, password]);
+        const result = await db.any(`INSERT INTO users (username, password) VALUES ($1, $2)`, [username, hashPassword]);
         res.status(201).json({
             status: 201,
             data: `User added successfully`
@@ -101,24 +106,46 @@ const updateUser = async (req, res) => {
 }
 
 const userLogin = (async (req, res) => {
-  try{
+    try{
   // const payload = { id: 1, username: "JohnDoe" };
-  const { username, password } = req.body;
-  const user = await db.query(`SELECT * FROM users WHERE username = $1 AND password = $2`, [username, password]);
+        const { username, password } = req.body;
+        const userPassword = await db.query(`SELECT password FROM users WHERE username= $1`, [username]);
 
-  if (!user) {
-    return res.status(401).json({
-      status: 401,
-      error: "Invalid username or password"
-    })
-  }
+        if (userPassword.length === 0) {
+            return res.status(401).json({
+            status: 401,
+            error: "Invalid username or password"
+            })
+        }
 
-  const token = jwt.sign({ id: user.id, username: user.username }, secretKey);
+        const hashPassword = userPassword.map(password => password.password)
 
-    res.json({ token });
-  } catch (err) {
-    console.error(err);
-  }
+        console.log(hashPassword[0]);
+
+        const verify = bcrypt.compareSync(password, hashPassword[0])
+        const user = await db.query(`SELECT * FROM users WHERE username = $1 AND password = $2`, [username, hashPassword[0]]);
+
+        console.log(verify);
+        if (!verify) {
+            return res.status(401).json({
+            status: 401,
+            error: "Invalid username or password"
+            })
+        }
+
+        const token = jwt.sign({ id: user.id, username: user.username }, secretKey);
+
+        res.status(200).json({
+            status: 200,
+            token: token
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            status: 500,
+            error: err
+        })
+    }
 })
 
 module.exports = {

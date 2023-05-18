@@ -3,6 +3,9 @@ const secretKey = require('../config/secretKey');
 
 function verifyToken(req, res, next) {
 
+  if (req.headers['authorization'] == null) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   const authHeader = req.headers['authorization'];
   const token = authHeader || authHeader.split(' ')[1];
 
@@ -14,7 +17,10 @@ function verifyToken(req, res, next) {
     console.log(err);
 
     if (err) {
-      return res.status(403).json({ error: 'Forbidden' });
+      return res.status(403).json({
+        status: 403,
+        error: 'Forbidden'
+      });
     }
 
     req.user = decoded;

@@ -22,11 +22,14 @@ app.use(cookieParser());
 // app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.post('/register', usersControllers.createUser);
 app.post('/login', usersControllers.userLogin);
 
 app.use('/', indexRouter);
+
 app.use(verifyToken);
 app.use('/users', usersRouter);
+
 
 
 // catch 404 and forward to error handler
