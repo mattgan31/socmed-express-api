@@ -62,6 +62,15 @@ const createUser = async (req, res) => {
         });
     }
 
+    const verifyUser = await db.query(`SELECT username FROM users WHERE username = $1`, [username])
+
+    if (verifyUser.length !== 0) {
+        return res.status(409).json({
+            status: 409,
+            error: "Username has already used"
+        })
+    }
+
     var hashPassword = bcrypt.hashSync(password, salt);
 
     try {
