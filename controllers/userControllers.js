@@ -120,12 +120,9 @@ const userLogin = (async (req, res) => {
 
         const hashPassword = userPassword.map(password => password.password)
 
-        console.log(hashPassword[0]);
-
         const verify = bcrypt.compareSync(password, hashPassword[0])
         const user = await db.query(`SELECT * FROM users WHERE username = $1 AND password = $2`, [username, hashPassword[0]]);
 
-        console.log(verify);
         if (!verify) {
             return res.status(401).json({
             status: 401,
