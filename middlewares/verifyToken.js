@@ -3,6 +3,9 @@ const secretKey = require('../config/secretKey');
 
 function verifyToken(req, res, next) {
 
+  if (req.headers['authorization'] == null) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
   const authHeader = req.headers['authorization'];
   const token = authHeader || authHeader.split(' ')[1];
 
