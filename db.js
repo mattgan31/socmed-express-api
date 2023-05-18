@@ -1,15 +1,17 @@
-const pgp = require('pg-promise')();
-const db = pgp('postgres://postgres:alam@localhost:5432/catalog_express')
-// const db = pgp({
-//   user: "postgres",
-//   password: "alam",
-//   host: "localhost",
-//   port: "5432",
-//   database: "catalog_express"
-// })
+const { Sequelize } = require('sequelize');
 
-// async function query(sql, params) {
-//   const [result,] = await db.
-// }
+const sequelize = new Sequelize('catalog_express', 'postgres', 'alam', {
+  host: 'localhost',
+  dialect: 'postgres'
+});
 
-module.exports = db;
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Database connected successfully');
+  })
+  .catch((error) => {
+    console.error('Connection database error:', error);
+  });
+
+module.exports = sequelize;
