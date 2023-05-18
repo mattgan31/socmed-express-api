@@ -31,7 +31,7 @@ const getUsers = async (req, res) => {
 const getUserById = async (req, res) => {
     const id = parseInt(req.params.id);
     try {
-        const user = await db.any(`SELECT * FROM users WHERE id = $1`, [id]);
+        const user = await db.query(`SELECT * FROM users WHERE id = $1`, [id]);
 
         if (user.length === 0) {
             return res.status(400).json({
@@ -41,7 +41,7 @@ const getUserById = async (req, res) => {
         }
         res.json({
             status: 200,
-            data: user
+            data: user[0]
         });
     } catch (err) {
         console.error(err);
@@ -122,10 +122,11 @@ const userLogin = (async (req, res) => {
 
         console.log(hashPassword[0]);
 
-        bcrypt.compare(password, hashPassword[0])
-        const user = await db.query(`SELECT * FROM users WHERE username = $1 AND password = $2`, [username, password]);
+        const verify = bcrypt.compareSync(password, hashPassword[0])
+        const user = await db.query(`SELECT * FROM users WHERE username = $1 AND password = $2`, [username, hashPassword[0]]);
 
-        if (!user) {
+        console.log(verify);
+        if (!verify) {
             return res.status(401).json({
             status: 401,
             error: "Invalid username or password"
