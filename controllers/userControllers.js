@@ -20,7 +20,6 @@ const getUsers = async (req, res) => {
             data: users
         });
     } catch (err) {
-        console.error(err);
         res.status(500).json({
             status: 500,
             error: `Error retrieving users`
@@ -45,7 +44,6 @@ const getUserById = async (req, res) => {
             });
         }
     } catch (err) {
-        console.error(err);
         res.status(500).json({
             status: 500,
             error: `Error retrieving user`
@@ -56,16 +54,14 @@ const getUserById = async (req, res) => {
 const createUser = async (req, res) => {
     const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({
-            status: 400,
-            error: `Username is required`
-        });
-    }
-
-    const isUserExists = await getUserByUsername(username);
-
     try {
+        if (!username || !password) {
+            return res.status(400).json({
+                status: 400,
+                error: `Username is required`
+            });
+        }
+        const isUserExists = await getUserByUsername(username);
 
         if (isUserExists) {
             return res.status(409).json({
@@ -74,15 +70,15 @@ const createUser = async (req, res) => {
             })
         }
 
-        var hashPassword = bcrypt.hashSync(password, salt);
+        const hashPassword = bcrypt.hashSync(password, salt);
 
-        const result = await User.create({username: username, password: hashPassword});
+        const result = await User.create({ username: username, password: hashPassword });
+
         res.status(201).json({
             status: 201,
             data: `User added successfully`
         })
     } catch (err) {
-        console.error(err);
         res.status(500).json({
             status: 500,
             error: `Error adding user`
@@ -94,26 +90,41 @@ const updateUser = async (req, res) => {
     const id = parseInt(req.params.id);
     const { username, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({
-            status: 400,
-            error: `Username is required`
-        });
-    }
-
-    var hashPassword = bcrypt.hashSync(password, salt);
-
     try {
+        if (!username || !password) {
+            return res.status(400).json({
+                status: 400,
+                error: `Username is required`
+            });
+        }
+
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(400).json({
+                status: 400,
+                error: `Username not found`
+            });
+        }
+
+        const isUserExists = await getUserByUsername(username);
+        if (isUserExists) {
+            return res.status(409).json({
+                status: 409,
+                error: "Username is unavailable"
+            })
+        }
+
+        var hashPassword = bcrypt.hashSync(password, salt);
+
         const result = await User.update({ username: username, password: hashPassword }, {
             where: {
             id: id
         }});
         res.status(201).json({
             status: 201,
-            data: "user updated successfully"
+            data: "User updated successfully"
         })
     } catch (err) {
-        console.error(err);
         res.status(500).json({
             status: 500,
             error: `Error updating user`
@@ -134,8 +145,6 @@ const userLogin = (async (req, res) => {
         }
 
         const verify = bcrypt.compareSync(password, user.password)
-        // const user = await User.findOne({ where: { username: username, password: user } });
-
 
         if (!verify) {
             return res.status(401).json({
@@ -151,7 +160,6 @@ const userLogin = (async (req, res) => {
             token: token
         });
     } catch (err) {
-        console.error(err);
         res.status(500).json({
             status: 500,
             error: err
@@ -164,7 +172,6 @@ const getUserByUsername = async (username) => {
         const user = await User.findOne({ where: { username: username } });
         return user;
     } catch (err) {
-        console.error(err);
         throw new Error("Error retrieving user by username");
     }
 };
