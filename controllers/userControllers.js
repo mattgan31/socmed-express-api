@@ -63,18 +63,19 @@ const createUser = async (req, res) => {
         });
     }
 
-    const verifyUser = await User.findOne({ where: {username: username} })
-
-    if (verifyUser) {
-        return res.status(409).json({
-            status: 409,
-            error: "Username has already used"
-        })
-    }
-
-    var hashPassword = bcrypt.hashSync(password, salt);
+    const isUserExists = await getUserByUsername(username);
 
     try {
+
+        if (isUserExists) {
+            return res.status(409).json({
+                status: 409,
+                error: "Username has already used"
+            })
+        }
+
+        var hashPassword = bcrypt.hashSync(password, salt);
+
         const result = await User.create({username: username, password: hashPassword});
         res.status(201).json({
             status: 201,
@@ -122,9 +123,8 @@ const updateUser = async (req, res) => {
 
 const userLogin = (async (req, res) => {
     try{
-  // const payload = { id: 1, username: "JohnDoe" };
         const { username, password } = req.body;
-        const user = await User.findOne( { where: { username: username } });
+        const user = await getUserByUsername(username);
 
         if (!user) {
             return res.status(401).json({
@@ -158,6 +158,16 @@ const userLogin = (async (req, res) => {
         })
     }
 })
+
+const getUserByUsername = async (username) => {
+    try {
+        const user = await User.findOne({ where: { username: username } });
+        return user;
+    } catch (err) {
+        console.error(err);
+        throw new Error("Error retrieving user by username");
+    }
+};
 
 module.exports = {
     getUsers,
