@@ -1,8 +1,10 @@
-var express = require('express');
-var router = express.Router();
+/* eslint linebreak-style: ["error", "windows"] */
+const express = require('express');
+
+const router = express.Router();
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
+router.get('/', (_req, res) => {
   res.render('index', { title: 'Express' });
 });
 

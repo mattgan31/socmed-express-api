@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
+/* eslint linebreak-style: ["error", "windows"] */
 const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize('catalog_express', 'postgres', 'alam', {
   host: 'localhost',
-  dialect: 'postgres'
+  dialect: 'postgres',
 });
 
 sequelize

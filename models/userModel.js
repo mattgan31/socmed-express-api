@@ -1,3 +1,4 @@
+/* eslint linebreak-style: ["error", "windows"] */
 const { DataTypes } = require('sequelize');
 const db = require('../db');
 
@@ -5,20 +6,20 @@ const User = db.define('User', {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true
+    autoIncrement: true,
   },
   username: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true
+    unique: true,
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false
-  }
+    allowNull: false,
+  },
 }, {
   tableName: 'users',
-  timestamps: true
+  timestamps: true,
 });
 
 module.exports = User;
