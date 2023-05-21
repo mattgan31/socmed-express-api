@@ -15,9 +15,15 @@ const getUsers = async (req, res) => {
                 error: `Data user is unavailable`
             });
         }
+
+        const formattedUsers = users.map(user => {
+            const { id, username, createdAt, updatedAt } = user;
+            return { id, username, createdAt, updatedAt };
+        });
+
         res.json({
             status: 200,
-            data: users
+            data: formattedUsers
         });
     } catch (err) {
         res.status(500).json({
@@ -28,14 +34,18 @@ const getUsers = async (req, res) => {
 }
 
 const getUserById = async (req, res) => {
-    const id = parseInt(req.params.id);
+    const userId = parseInt(req.params.id);
     try {
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(userId);
 
         if (user) {
+            const { id, username, createdAt, updatedAt } = user;
+
             res.json({
             status: 200,
-            data: user
+                data: {
+                    id, username, createdAt, updatedAt
+            }
             });
         } else {
             res.status(400).json({
@@ -48,6 +58,34 @@ const getUserById = async (req, res) => {
             status: 500,
             error: `Error retrieving user`
         });
+    }
+}
+
+const getUserByAuth = async (req,res) => {
+    const {username: authUser} = req.user;
+    try {
+        const user = await getUserByUsername(authUser)
+
+        if(!user){
+            res.status(400).json({
+                status: 400,
+                error: `Data user is unavailable`
+            });
+        }
+
+        const { id, username, createdAt, updatedAt } = user;
+
+        res.json({
+            status: 200,
+            data: {
+                id,
+                username,
+                createdAt,
+                updatedAt
+            }
+        });
+    } catch (err) {
+        console.log(err);
     }
 }
 
@@ -74,9 +112,12 @@ const createUser = async (req, res) => {
 
         const result = await User.create({ username: username, password: hashPassword });
 
+        const token = await getJWTToken(username);
+
         res.status(201).json({
             status: 201,
-            data: `User added successfully`
+            data: `User added successfully`,
+            token
         })
     } catch (err) {
         res.status(500).json({
@@ -153,7 +194,7 @@ const userLogin = (async (req, res) => {
             })
         }
 
-        const token = jwt.sign({ id: user.id, username: user.username }, secretKey);
+        const token = await getJWTToken(user);
 
         res.status(200).json({
             status: 200,
@@ -176,9 +217,15 @@ const getUserByUsername = async (username) => {
     }
 };
 
+const getJWTToken = async (user) => {
+    const token = jwt.sign({ id: user.id, username: user.username }, secretKey);
+    return token;
+}
+
 module.exports = {
     getUsers,
     getUserById,
+    getUserByAuth,
     createUser,
     updateUser,
     userLogin
