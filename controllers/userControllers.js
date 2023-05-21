@@ -22,7 +22,7 @@ const getJWTToken = async (user) => {
   return token;
 };
 
-const getUsers = async (res) => {
+const getUsers = async (_req, res) => {
   try {
     const users = await User.findAll();
 
