@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-/* eslint linebreak-style: ["error", "windows"] */
+
 // const db = require("../db.js");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');

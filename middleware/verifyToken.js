@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-/* eslint linebreak-style: ["error", "windows"] */
+
 const jwt = require('jsonwebtoken');
 const secretKey = require('../config/secretKey');
 
