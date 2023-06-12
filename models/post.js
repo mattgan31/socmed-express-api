@@ -1,24 +1,32 @@
-const { DataTypes } = require('sequelize');
-const db = require('../db');
+'use strict';
 
-const Post = db.define('User', {
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  },
-  post: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true,
-  },
-  userId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-}, {
-  tableName: 'posts',
-  timestamps: true,
-});
+module.exports = (sequelize, DataTypes) => {
+  const Post = sequelize.define('Post', {
+    post: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    }
+  }, {
+    tableName: 'posts'
+  });
 
-module.exports = Post;
+  Post.associate = (models) => {
+    Post.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
+    },
+      Post.hasMany(models.Comment, {
+        foreignKey: 'postId',
+        as:'comments'
+    }));
+  };
+
+  return Post;
+};
+
+
+// post, userId

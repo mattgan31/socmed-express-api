@@ -6,13 +6,14 @@ const bcrypt = require('bcrypt');
 const secretKey = require('../config/secretKey');
 
 const salt = bcrypt.genSaltSync(10);
-const User = require('../models/userModel');
+const { User, Post } = require('../models');
 
 const getUserByUsername = async (username) => {
   try {
     const user = await User.findOne({ where: { username } });
     return user;
   } catch (err) {
+    console.log(err);
     throw new Error('Error retrieving user by username');
   }
 };
@@ -22,9 +23,11 @@ const getJWTToken = async (user) => {
   return token;
 };
 
-const getUsers = async (res) => {
+const getUsers = async (req, res) => {
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      include:Post
+    });
 
     if (users.length === 0) {
       return res.status(400).json({
@@ -47,6 +50,7 @@ const getUsers = async (res) => {
       data: formattedUsers,
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       status: 500,
       error: 'Error retrieving users',
@@ -117,6 +121,7 @@ const getUserByAuth = async (req, res) => {
       },
     });
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       status: 500,
       error: err,
