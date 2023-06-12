@@ -1,4 +1,5 @@
-const Post = require('../models/post');
+const { Comment, Post } = require('../models');
+// const User = require('../models/userModel');
 
 // mengambil data post dari req dan userId berdasarkan jwt
 const createPost = async (req, res) => {
@@ -32,7 +33,12 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
     try {
-        const posts = await Post.findAll();
+        const posts = await Post.findAll({
+            include: {
+                model: Comment,
+                as: 'comments'
+            }
+        });
         if (!posts) {
             res.status(404).json({
                 status: 404,
@@ -44,6 +50,38 @@ const getPosts = async (req, res) => {
             posts
         });
     } catch (err) {
+        console.log(err);
+        return res.status(500).json({
+            status: 500,
+            error: err
+        });
+    }
+}
+
+const createCommentPost = async (req, res) => {
+    const { id } = req.user;
+    const { description } = req.body;
+    const postId = req.params.postId;
+
+    try {
+        let thisPost = await Post.findByPk(postId);
+        if (!postId | !thisPost) {
+            return res.status(400).json({
+                status: 400,
+                error: 'Post not found'
+            });
+        }
+
+        var userId = id;
+
+        let newComment = await Comment.create({ description, userId, postId });
+
+        return res.status(200).json({
+            status: 200,
+            data: newComment
+        })
+    } catch (err) {
+        console.log(err);
         return res.status(500).json({
             status: 500,
             error: err
@@ -53,5 +91,6 @@ const getPosts = async (req, res) => {
 
 module.exports = {
     getPosts,
-    createPost
+    createPost,
+    createCommentPost
 }
