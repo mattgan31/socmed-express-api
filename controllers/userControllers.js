@@ -271,11 +271,54 @@ const followUser = async(req,res) => {
     User.findByPk(followerId).then((follower) => {
       User.findByPk(id).then((following) => {
         Relationship.create({ followerId: follower.id, followingId: following.id }).then(() => {
-          return res.json({
-            status: 200,
-            message:"Following Success"
+          return res.status(201).json({
+            status: 201,
+            message: `Following user with ID ${following.id} Success`
           });
         })
+      })
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 500,
+      error
+    });
+  }
+}
+
+const unfollowUser = async(req,res) => {
+  try {
+    const followerId  = (req.user.id);
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(404).json({
+        status: 404,
+        error: 'User not found',
+      });
+    }
+    if (followerId == id) {
+      return res.status(400).json({
+        status: 400,
+        error: 'Cannot unfollow yourself'
+      })
+    }
+
+    const follower = await Relationship.findOne({ where: { followerId: followerId } });
+    const following = await Relationship.findOne({ where: { followingId: id } });
+
+    if (!follower || !following) {
+      return res.status(404).json({
+        status: 404,
+        error: 'Relationship not found',
+      });
+    }
+
+    Relationship.destroy({ where:{followerId: followerId, followingId: id} }).then(() => {
+      return res.json({
+        status: 200,
+        message:`Unfollow user with ID ${id} Success`
       })
     });
   } catch (error) {
@@ -294,5 +337,6 @@ module.exports = {
   createUser,
   updateUser,
   userLogin,
-  followUser
+  followUser,
+  unfollowUser
 };
