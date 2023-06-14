@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 const secretKey = require('../config/secretKey');
 
 const salt = bcrypt.genSaltSync(10);
-const { User, Post } = require('../models');
+const { User, Post, Relationship } = require('../models');
 
 const getUserByUsername = async (username) => {
   try {
@@ -251,6 +251,42 @@ const userLogin = (async (req, res) => {
   }
 });
 
+const followUser = async(req,res) => {
+  try {
+    const followerId  = (req.user.id);
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(404).json({
+        status: 404,
+        error: 'User not found',
+      });
+    }
+    if (followerId == id) {
+      return res.status(400).json({
+        status: 400,
+        error: 'Cannot following yourself'
+      })
+    }
+    User.findByPk(followerId).then((follower) => {
+      User.findByPk(id).then((following) => {
+        Relationship.create({ followerId: follower.id, followingId: following.id }).then(() => {
+          return res.json({
+            status: 200,
+            message:"Following Success"
+          });
+        })
+      })
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      status: 500,
+      error
+    });
+  }
+}
+
 module.exports = {
   getUsers,
   getUserById,
@@ -258,4 +294,5 @@ module.exports = {
   createUser,
   updateUser,
   userLogin,
+  followUser
 };
