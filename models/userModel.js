@@ -18,9 +18,22 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'users'
   });
   // Definisikan asosiasi User dengan Post dan Comment
+
 User.associate = (models) => {
   User.hasMany(models.Post, { foreignKey: 'userId' });
   User.hasMany(models.Comment, { foreignKey: 'userId' });
+  User.belongsToMany(models.User, {
+    through: models.Relationship,
+    as: 'Follower',
+    foreignKey: 'followingId',
+    otherKey: 'followerId',
+  });
+  User.belongsToMany(models.User, {
+    through: models.Relationship,
+    as: 'Following',
+    foreignKey: 'followerId',
+    otherKey: 'followingId',
+  });
 };
 
   return User;
