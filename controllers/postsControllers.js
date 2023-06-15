@@ -58,39 +58,7 @@ const getPosts = async (req, res) => {
     }
 }
 
-const createCommentPost = async (req, res) => {
-    const { id } = req.user;
-    const { description } = req.body;
-    const postId = req.params.postId;
-
-    try {
-        let thisPost = await Post.findByPk(postId);
-        if (!postId | !thisPost) {
-            return res.status(400).json({
-                status: 400,
-                error: 'Post not found'
-            });
-        }
-
-        var userId = id;
-
-        let newComment = await Comment.create({ description, userId, postId });
-
-        return res.status(200).json({
-            status: 200,
-            data: newComment
-        })
-    } catch (err) {
-        console.log(err);
-        return res.status(500).json({
-            status: 500,
-            error: err
-        });
-    }
-}
-
 module.exports = {
     getPosts,
     createPost,
-    createCommentPost
 }
