@@ -35,9 +35,7 @@ const getPosts = async (req, res) => {
     try {
         const posts = await Post.findAll({
             include: [{
-                model: Comment,
-                as: 'comments'
-            }, {model: User,
+                model: User,
                     as: 'user'
                 }
             ],
@@ -69,7 +67,11 @@ const getPostById = async (req, res) => {
         const posts = await Post.findByPk(postId, {
             include: [{
                 model: Comment,
-                as: 'comments'
+                as: 'comments',
+                include: [{
+                    model: User,
+                    as: 'user_comment'
+                }]
             }, {model: User,
                     as: 'user'
                 }

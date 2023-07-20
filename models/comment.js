@@ -23,7 +23,7 @@ module.exports = () => {
 
   Comment.associate = function(models) {
     Comment.belongsTo(models.Post, { foreignKey: 'postId', as:'comments' });
-    Comment.belongsTo(models.User, { foreignKey: 'userId' });
+    Comment.belongsTo(models.User, { foreignKey: 'userId', as:'user_comment' });
   };
 
   return Comment;
